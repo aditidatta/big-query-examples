@@ -3,11 +3,6 @@ package com.examples.gcp;
 import com.examples.gcp.utils.BigQueryUtils;
 import com.google.cloud.bigquery.*;
 
-import java.io.IOException;
-
-
-import java.util.UUID;
-
 public class BigQueryJava {
 
     private static final String PROJECT_ID = "bigquery-examples-252504";
@@ -29,11 +24,19 @@ public class BigQueryJava {
 
         // load data using job
         // this method is useful when loading data from a file, all at once
-        Long numRecordsCreated = loadJob(bigQuery, table);
+        if (args[0].equals("loadData")) {
+            Long numRecordsCreated = loadJob(bigQuery, table);
+            System.out.printf("[%d] records inserted!\n", numRecordsCreated);
+        } else if (args[0].equals("runQuery")) {
+            String queryString = args[1];
+            System.out.printf("Running query [%s] \n", queryString);
+            queryJob(bigQuery, queryString);
+        }
 
         // SKIPPED - load data using insertAll
         // this method is useful when you are consuming data from some other source
         // you can stream them in batches
+
 
 
     }
@@ -91,7 +94,7 @@ public class BigQueryJava {
 
 
         Job loadJob = bigQuery.create(JobInfo.of(loadJobConfiguration));    // same as bigQuery.jobs().insert(job) if you are using Google API libraries
-                                                                            // or same as 'jobs/insert' endpoint, if you are using REST
+                                                                            // or same as 'jobs.insert' endpoint, if you are using REST
                                                                             // this project uses Cloud library so it's bigQuery.create(job)
         // wait for it to finish
         loadJob = loadJob.waitFor();
@@ -102,7 +105,17 @@ public class BigQueryJava {
         return updatedTable.getNumRows();
     }
 
-    private static void queryJob(BigQuery bigQuery, Table table, String queryString) {
+    private static void queryJob(BigQuery bigQuery, String queryString) throws InterruptedException {
+        QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(queryString)
+                .setUseLegacySql(true)
+                .build();
+
+        // you could also build a query job and then called bigQuery.create(job) to run it like we wrote the loadJob,
+        // or you could also use bigQuery.jobs().insert(job) in case of Google API library, or jobs.insert in REST
+        // but the following method does it for you
+        for (FieldValueList row : bigQuery.query(queryConfig).getValues()) {
+            System.out.println(row.get("title").getStringValue());
+        }
 
     }
 }
