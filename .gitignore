@@ -39,7 +39,6 @@ hs_err_pid*
 target/
 **/node_modules/*
 **/.build_cache/*
-*.log
 .scannerwork
 secrets.json
 .vscode
