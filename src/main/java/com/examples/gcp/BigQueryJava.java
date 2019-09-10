@@ -10,8 +10,6 @@ public class BigQueryJava {
     private static final String TABLE_NAME = "movies";
     private static final String MOVIES_28K_URI = "gs://alpha-beta/movies_ndjson_28k.json";
 
-
-
     public static void main(String[] args) throws InterruptedException {
         BigQuery bigQuery = BigQueryOptions.getDefaultInstance().getService();
 
@@ -36,9 +34,6 @@ public class BigQueryJava {
         // SKIPPED - load data using insertAll
         // this method is useful when you are consuming data from some other source
         // you can stream them in batches
-
-
-
     }
 
     private static Dataset createDatasetOrGet(BigQuery bigQuery) {
