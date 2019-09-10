@@ -8,7 +8,6 @@ public class BigQueryJava {
     private static final String PROJECT_ID = "bigquery-examples-252504";
     private static final String DATASET_NAME = "test_dataset";
     private static final String TABLE_NAME = "movies";
-    private static final String MOVIES_28K_URI = "gs://alpha-beta/movies_ndjson_28k.json";
 
     public static void main(String[] args) throws InterruptedException {
         BigQuery bigQuery = BigQueryOptions.getDefaultInstance().getService();
@@ -23,8 +22,9 @@ public class BigQueryJava {
         // load data using job
         // this method is useful when loading data from a file, all at once
         if (args[0].equals("loadData")) {
-            Long numRecordsCreated = loadJob(bigQuery, table);
-            System.out.printf("[%d] records inserted!\n", numRecordsCreated);
+            String urlToJson = args[1];
+            Long numRecordsCreated = loadJob(bigQuery, table, urlToJson);
+            System.out.printf("[%d] records in table after insert.\n", numRecordsCreated);
         } else if (args[0].equals("runQuery")) {
             String queryString = args[1];
             System.out.printf("Running query [%s] \n", queryString);
@@ -74,14 +74,14 @@ public class BigQueryJava {
         return Schema.of(title, year, cast, genres);
     }
 
-    private static Long loadJob(BigQuery bigQuery, Table table) throws InterruptedException {
+    private static Long loadJob(BigQuery bigQuery, Table table, String url) throws InterruptedException {
         // format of job, in case you plan to use REST: https://cloud.google.com/bigquery/docs/reference/rest/v2/Job
         // check out JobConfiguration: https://cloud.google.com/bigquery/docs/reference/rest/v2/Job#JobConfiguration
 
         // for load job, create a JobConfigurationLoad
         // format: https://cloud.google.com/bigquery/docs/reference/rest/v2/Job#JobConfigurationLoad
         // class ref for Cloud library, for API library it's different: https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/LoadJobConfiguration.html
-        LoadJobConfiguration loadJobConfiguration = LoadJobConfiguration.builder(table.getTableId(), MOVIES_28K_URI)
+        LoadJobConfiguration loadJobConfiguration = LoadJobConfiguration.builder(table.getTableId(), url)
                 .setFormatOptions(FormatOptions.json())
                 .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
                 .setSchema(table.getDefinition().getSchema())
